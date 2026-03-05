@@ -21,6 +21,7 @@ usage: `ppa_cleanup.py [-h] --owner OWNER --ppa PPA [--keep KEEP] [--package PAC
                      [--yes]`
 
 options:
+  ```
   -h, --help         show this help message and exit
   --owner OWNER      Launchpad PPA owner username
   --ppa PPA          PPA name
@@ -28,6 +29,7 @@ options:
   --package PACKAGE  Filter to a specific package name
   --dry-run          Show what would be deleted without actually deleting
   --yes, -y          Skip confirmation prompt
+  ```
 
 ### What It Does
 * Authenticates with Launchpad (opens browser on first run for OAuth)
@@ -62,11 +64,13 @@ usage: `ppa_stats.py [-h] --owner OWNER --ppa PPA [--package PACKAGE]
                    [--status {Published,Superseded,Deleted,Obsolete,Pending}]`
 
 options:
+  ```
   -h, --help            show this help message and exit
   --owner OWNER         Launchpad username (e.g. your-launchpad-username)
   --ppa PPA             PPA name (e.g. my-ppa)
   --package PACKAGE     Specific package name to query (default: all packages)
   --status {Published,Superseded,Deleted,Obsolete,Pending}
                         Package status filter (default: Published)
+  ```
 
 
