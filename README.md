@@ -2,7 +2,19 @@
 
 ## Prerequisites
 
-`pip install launchpadlib keyring`
+`pip install launchpadlib keyring build hatchling`
+
+## Installation 
+```
+cd src
+python3 -m build
+sudo pip install --upgrade dist/*.whl
+rm -r dist
+```
+
+Scripts are available from the command line by typing:
+`ppa_cleanup`
+`ppa_stats`
 
 ## ppa_cleanup.py
 Clean up old package versions from a Launchpad PPA.
