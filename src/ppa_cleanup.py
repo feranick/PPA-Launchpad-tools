@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-Launchpad PPA Cleanup Script
-Removes old package versions from a PPA, keeping the N most recent.
+***********************************************
+* Launchpad PPA Cleanup Script
+* v2026.03.05.1
+* Removes old package versions from a PPA, keeping the N most recent.
+***********************************************
 """
+print(__doc__)
 
 import argparse
 import sys
@@ -11,6 +15,11 @@ from datetime import datetime, timezone
 
 from launchpadlib.launchpad import Launchpad
 
+#***************************************************
+# This is needed for installation through pip
+#***************************************************
+def ppa_cleanup():
+    main()
 
 def get_ppa(lp, owner, ppa_name):
     """Retrieve the PPA archive object."""
@@ -203,6 +212,8 @@ Examples:
         deleted, errors = perform_deletion(groups, args.keep, dry_run=False)
         print(f"\nDone: {deleted} deleted, {errors} errors.")
 
-
+#************************************
+# Main initialization routine
+#************************************
 if __name__ == "__main__":
     main()

@@ -47,8 +47,7 @@ options:
 * First run will open a browser window for Launchpad authentication; credentials are cached afterward
 
 ## ppa_stats.py
-
-Privide usage statistics about individual or all packages in a PPA
+Provide usage statistics about individual or all packages in a PPA
 
 ### All packages
 `python ppa_stats.py --owner your-username --ppa your-ppa-name`

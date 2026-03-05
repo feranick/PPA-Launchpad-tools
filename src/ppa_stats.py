@@ -1,7 +1,22 @@
+#!/usr/bin/env python3
+"""
+***********************************************
+* Launchpad PPA Statistics Script
+* v2026.03.05.1
+* Provide usage statistics about individual or all packages in a PPA
+***********************************************
+"""
+print(__doc__)
+
 import argparse
 from launchpadlib.launchpad import Launchpad
 from collections import defaultdict
 
+#***************************************************
+# This is needed for installation through pip
+#***************************************************
+def ppa_stats():
+    main()
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -98,6 +113,8 @@ def main():
     print(f"  Grand total across all packages: {grand_total:,}")
     print(f"{'=' * 50}")
 
-
+#************************************
+# Main initialization routine
+#************************************
 if __name__ == '__main__':
     main()
