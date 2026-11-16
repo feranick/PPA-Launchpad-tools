@@ -5,8 +5,8 @@
 `pip install launchpadlib keyring build hatchling`
 
 ## Installation 
+From the root of the repository:
 ```
-cd src
 python3 -m build
 sudo pip install --upgrade dist/*.whl
 rm -r dist
