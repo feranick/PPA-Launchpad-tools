@@ -2,13 +2,15 @@
 """
 ***********************************************
 * Launchpad PPA Statistics Script
-* v2026.03.05.1
+* v2026.11.16.1
 * Provide usage statistics about individual or all packages in a PPA
 ***********************************************
 """
 print(__doc__)
 
 import argparse
+import os
+from keyring.errors import KeyringError
 from launchpadlib.launchpad import Launchpad
 from collections import defaultdict
 
@@ -17,6 +19,23 @@ from collections import defaultdict
 #***************************************************
 def ppa_stats():
     main()
+
+def lp_login(app_name):
+    """Log in to Launchpad. Use the system keyring when available; if it is
+    locked or missing (e.g. over SSH), fall back to a credentials file
+    readable only by the user."""
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+    cred_dir = os.path.join(config_home, "ppa-launchpad-tools")
+    cred_file = os.path.join(cred_dir, f"{app_name}.credentials")
+    if not os.path.exists(cred_file):
+        try:
+            return Launchpad.login_with(app_name, "production", version="devel")
+        except KeyringError as e:
+            print(f"System keyring unavailable ({e}).")
+            print(f"Falling back to file-based credentials: {cred_file}")
+    os.makedirs(cred_dir, mode=0o700, exist_ok=True)
+    return Launchpad.login_with(app_name, "production", version="devel",
+                                credentials_file=cred_file)
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -49,7 +68,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    lp = Launchpad.login_with('ppa-stats', 'production', version='devel')
+    lp = lp_login('ppa-stats')
 
     owner = lp.people[args.owner]
     ppa = owner.getPPAByName(name=args.ppa)

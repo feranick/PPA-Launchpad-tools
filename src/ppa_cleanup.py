@@ -2,17 +2,19 @@
 """
 ***********************************************
 * Launchpad PPA Cleanup Script
-* v2026.03.05.1
+* v2026.11.16.1
 * Removes old package versions from a PPA, keeping the N most recent.
 ***********************************************
 """
 print(__doc__)
 
 import argparse
+import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 
+from keyring.errors import KeyringError
 from launchpadlib.launchpad import Launchpad
 
 #***************************************************
@@ -20,6 +22,23 @@ from launchpadlib.launchpad import Launchpad
 #***************************************************
 def ppa_cleanup():
     main()
+
+def lp_login(app_name):
+    """Log in to Launchpad. Use the system keyring when available; if it is
+    locked or missing (e.g. over SSH), fall back to a credentials file
+    readable only by the user."""
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+    cred_dir = os.path.join(config_home, "ppa-launchpad-tools")
+    cred_file = os.path.join(cred_dir, f"{app_name}.credentials")
+    if not os.path.exists(cred_file):
+        try:
+            return Launchpad.login_with(app_name, "production", version="devel")
+        except KeyringError as e:
+            print(f"System keyring unavailable ({e}).")
+            print(f"Falling back to file-based credentials: {cred_file}")
+    os.makedirs(cred_dir, mode=0o700, exist_ok=True)
+    return Launchpad.login_with(app_name, "production", version="devel",
+                                credentials_file=cred_file)
 
 def get_ppa(lp, owner, ppa_name):
     """Retrieve the PPA archive object."""
@@ -173,11 +192,7 @@ Examples:
 
     # Authenticate with Launchpad
     print("Authenticating with Launchpad...")
-    lp = Launchpad.login_with(
-        "ppa-cleanup-script",
-        "production",
-        version="devel",
-    )
+    lp = lp_login("ppa-cleanup-script")
 
     # Fetch PPA and packages
     print(f"Fetching packages from ~{args.owner}/{args.ppa}...")
