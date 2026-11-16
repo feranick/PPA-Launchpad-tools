@@ -17,10 +17,11 @@ include = [
 
 [project]
 name = "PPA-Launchpad-Tools"
-version = "v2026.11.16.1"
+version = "v2026.11.16.2"
 dependencies = [
     "launchpadlib",
     "keyring",
+    "httplib2",
 ]
     
 authors = [{ name="Nicola Ferralis", email="feranick@hotmail.com" },]

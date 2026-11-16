@@ -2,18 +2,21 @@
 """
 ***********************************************
 * Launchpad PPA Cleanup Script
-* v2026.11.16.1
+* v2026.11.16.2
 * Removes old package versions from a PPA, keeping the N most recent.
 ***********************************************
 """
 print(__doc__)
 
 import argparse
+import http.client
 import os
 import sys
+import time
 from collections import defaultdict
 from datetime import datetime, timezone
 
+import httplib2
 from keyring.errors import KeyringError
 from launchpadlib.launchpad import Launchpad
 
@@ -23,22 +26,32 @@ from launchpadlib.launchpad import Launchpad
 def ppa_cleanup():
     main()
 
-def lp_login(app_name):
+def lp_login(app_name, retries=4):
     """Log in to Launchpad. Use the system keyring when available; if it is
     locked or missing (e.g. over SSH), fall back to a credentials file
     readable only by the user."""
     config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
     cred_dir = os.path.join(config_home, "ppa-launchpad-tools")
     cred_file = os.path.join(cred_dir, f"{app_name}.credentials")
-    if not os.path.exists(cred_file):
+    for attempt in range(1, retries + 1):
         try:
-            return Launchpad.login_with(app_name, "production", version="devel")
-        except KeyringError as e:
-            print(f"System keyring unavailable ({e}).")
-            print(f"Falling back to file-based credentials: {cred_file}")
-    os.makedirs(cred_dir, mode=0o700, exist_ok=True)
-    return Launchpad.login_with(app_name, "production", version="devel",
-                                credentials_file=cred_file)
+            if not os.path.exists(cred_file):
+                try:
+                    return Launchpad.login_with(app_name, "production", version="devel")
+                except KeyringError as e:
+                    print(f"System keyring unavailable ({e}).")
+                    print(f"Falling back to file-based credentials: {cred_file}")
+            os.makedirs(cred_dir, mode=0o700, exist_ok=True)
+            return Launchpad.login_with(app_name, "production", version="devel",
+                                        credentials_file=cred_file)
+        except (http.client.HTTPException, ConnectionError, TimeoutError,
+                httplib2.HttpLib2Error) as e:
+            if attempt == retries:
+                print(f"Error: could not connect to Launchpad after {retries} attempts: {e!r}")
+                sys.exit(1)
+            print(f"Network error talking to Launchpad ({e.__class__.__name__}), "
+                  f"retrying ({attempt}/{retries})...")
+            time.sleep(2 * attempt)
 
 def get_ppa(lp, owner, ppa_name):
     """Retrieve the PPA archive object."""
